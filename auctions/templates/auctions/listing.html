@@ -1,0 +1,79 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Listing: {{ listing_item.item_name }}</h2>
+
+    {% if alert is not None %}
+      <div class="{{ color }}">
+          {{ alert }}
+      </div>
+    {% endif %}
+
+    {% if not listing_item.is_active and winner == user %}
+      <div class="p-3 text-success-emphasis bg-success border border-success rounded-3">
+        Congratulations, You have won the Auction!!!
+      </div>
+    {% endif %}
+    
+    {% if listing_item.is_active %}
+    <form action="{% url 'watchlist' %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="item_id" value="{{ listing_item.id }}">
+      <input type="submit" class="btn-primary" value="Add to Watchlist">
+    </form>
+    {% endif %}
+
+    <div class="card mb-3">
+      <img src="{{ listing_item.image.url }}" class="card-img-top" alt="item image" style="width: 400px; height: 400px; text-align: center;">
+      <div class="card-body">
+        <p class="card-text">{{ listing_item.discription }}</p>
+        <p class="card-text"> <strong>Price:</strong> ${{ listing_item.price }}</p>
+        <p class="card-text"><small class="text-body-secondary">Created {{ listing_item.last_updated }}</small></p>
+      </div>
+    </div>
+
+    <p>{{ count }} Bid(s) sofar. </p>
+    <p>The highest bid sofar is ${{ max_bid }} </p>
+
+
+    {% if creator and listing_item.is_active %}
+
+      <form action="{% url 'close_biding' id=listing_item.id %}" method="post">
+        {% csrf_token %}
+        
+        
+        <input class="btn btn-primary" type="submit" value="Close the bidding">
+      </form>
+
+    {% elif not listing_item.is_active %}
+
+      <p><strong>auction Is closed!!!</strong></p>
+
+    {% else %}
+
+      <form action="{% url 'bids' %}" method="post" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-4">
+          <label for="validationServer01" class="form-label">Place A Bid</label>
+          <input type="hidden" name="id" value="{{ listing_item.id }}">
+          <input type="number" class="form-control is-valid" id="validationServer01" placeholder="Bid" name="bid_price" required>
+          <div class="valid-feedback">
+            Looks good!
+          </div>
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Place A Bid</button>
+        </div>
+      </form>
+
+    {% endif %}
+
+    <h5>Details</h5>
+    <ul>
+      <li><strong>Listed by:</strong> {{listing_item.listed_by}}</li>
+      <li><strong>category:</strong> {{listing_item.category}}</li>
+    </ul>
+  
+    
+
+{% endblock %}
