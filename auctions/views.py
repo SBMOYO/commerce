@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import User, Auction_listings,Bids, Watch_list
+from .models import User, Auction_listings,Bids, Watch_list, Comments, Category
 from django import forms
 
 
@@ -15,14 +15,16 @@ from django import forms
 class AuctionListingsForm(forms.ModelForm):
     class Meta:
         model = Auction_listings
-        fields = ['item_name', 'price', 'discription', 'image', 'category']
+        fields = ['item_name', 'price', 'discription', 'image', 'category', 'listed_by']
 
 
 def index(request):
     listings = Auction_listings.objects.filter(is_active=True)
+    categories = Category.objects.all()
 
     return render(request, "auctions/index.html", {
-        "listings": listings
+        "listings": listings,
+        "categories": categories
     })
 
 
@@ -96,23 +98,26 @@ def create_listing(request):
     })
 
 
-
+@login_required
 def listing(request, id):
 
     listing_item = Auction_listings.objects.get(pk=id)
     user = User.objects.get(pk=request.user.id)
+    
     
     try:
         bid_count = Bids.objects.filter(item=id).count()
         max_bid = Bids.objects.filter(item=id).aggregate(Max('bid'))['bid__max']
         max_bid_obj = Bids.objects.get(item=id, bid=max_bid)
         max_bidder = max_bid_obj.user
+        all_comments =Comments.objects.filter(item=id)
             
     except ObjectDoesNotExist:
         bid_count = None
         max_bid = None
         max_bid_obj = None
         max_bidder = None
+        all_comments = None
         
         
 
@@ -128,7 +133,8 @@ def listing(request, id):
         "creator": creator,
         "max_bid": max_bid,
         "max_bidder": max_bidder,
-        "winner": winner
+        "winner": winner,
+        "all_comments": all_comments
     })
 
 @login_required
@@ -164,7 +170,7 @@ def watchlist(request):
         "color": color
     })
 
-
+@login_required
 def watchlist_del(request):
     if request.method == 'POST':
         id = request.POST['item_id']
@@ -173,7 +179,7 @@ def watchlist_del(request):
 
         return HttpResponseRedirect(reverse('watchlist'))
     
-
+@login_required
 def bids(request):
     
     if request.method == "POST":
@@ -201,7 +207,7 @@ def bids(request):
 
     return HttpResponseRedirect(reverse('index'))
 
-
+@login_required
 def close_biding(request, id):
     alert = None
     the_winner = None
@@ -244,4 +250,25 @@ def close_biding(request, id):
         "user": user
     })
 
-    
+@login_required
+def comment(request, id):
+    new_item = Auction_listings.objects.get(pk=id)
+    new_user = request.user
+    add_comment = request.POST['new_comment']
+
+    new = Comments.objects.create(item=new_item, user=new_user, comment=add_comment)
+    new.save()
+
+    return HttpResponseRedirect(reverse("listing",args=(id, )))
+
+def category(request):
+    if request.method == "POST":
+        cat = request.POST['category']
+        cat = Category.objects.get(Category=cat)
+        listings = Auction_listings.objects.filter(is_active=True, category=cat)
+        categories = Category.objects.all()
+
+        return render(request, "auctions/index.html", {
+            "listings": listings,
+            "categories": categories
+        })
