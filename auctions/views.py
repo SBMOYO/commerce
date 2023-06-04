@@ -103,6 +103,7 @@ def listing(request, id):
 
     listing_item = Auction_listings.objects.get(pk=id)
     user = User.objects.get(pk=request.user.id)
+    all_comments = Comments.objects.filter(item=id)
     
     
     try:
@@ -110,16 +111,12 @@ def listing(request, id):
         max_bid = Bids.objects.filter(item=id).aggregate(Max('bid'))['bid__max']
         max_bid_obj = Bids.objects.get(item=id, bid=max_bid)
         max_bidder = max_bid_obj.user
-        all_comments =Comments.objects.filter(item=id)
-            
+                 
     except ObjectDoesNotExist:
         bid_count = None
         max_bid = None
         max_bid_obj = None
         max_bidder = None
-        all_comments = None
-        
-        
 
     creator = listing_item.listed_by == user
     winner = None
