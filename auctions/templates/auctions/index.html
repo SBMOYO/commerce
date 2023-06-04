@@ -3,6 +3,17 @@
 {% block body %}
     <h2>Active Listings</h2>
 
+    <form action="{% url 'select_category' %}" method="post">
+        {% csrf_token %}
+        <label for="category">Choose A Category</label>
+        <select name="category" id="category">
+            {% for item in categories %}
+                <option value="{{ item }}"> {{ item }}</option>
+            {% endfor %}
+        </select>
+        <input class="btn btn-primary" type="submit" value="select">
+    </form>
+
     {% for list in listings %}
 
         <a href="{% url 'listing' id=list.id %}">

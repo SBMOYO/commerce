@@ -73,6 +73,34 @@
       <li><strong>Listed by:</strong> {{listing_item.listed_by}}</li>
       <li><strong>category:</strong> {{listing_item.category}}</li>
     </ul>
+
+    <h2>Comments</h2>
+
+    {% if user.is_authenticated %}
+    <form action="{% url 'comment' id=listing_item.id %}" method="post">
+      {% csrf_token %}
+      <div class="form-group">
+          <input autofocus class="form-control" type="text" name="new_comment" placeholder="Leave A Comment">
+      </div>
+      
+      <input class="btn btn-primary" type="submit" value="comment">
+    </form>
+    {% endif %}
+
+
+    <ul class="list-group" style="margin-top: 20px;"></ul>
+      {% for comment in all_comments %}
+      
+        <li class="list-group-item" style="margin-top: 10px;">{{ comment.comment }}
+          <br/>
+          <p>posted by: <strong>{{ comment.user }}</strong></p>
+        </li>
+              
+      {% endfor %}
+    </ul>
+      
+
+  
   
     
 

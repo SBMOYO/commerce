@@ -16,7 +16,6 @@ class Auction_listings(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     
-
     def __str__(self):
         return self.item_name
 
@@ -34,7 +33,7 @@ class Bids(models.Model):
 class Comments(models.Model):
     item = models.ForeignKey("Auction_listings", on_delete=models.CASCADE)
     user = models.ForeignKey("User", on_delete=models.CASCADE)
-    comment = models.TextField(max_length=500)
+    comment = models.TextField(null=True, blank=True, max_length=500)
 
     def __str__(self):
         return self.comment
